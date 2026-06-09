@@ -1,10 +1,14 @@
 import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
+import { rateLimitMiddleware } from './middleware/rateLimit'
+import { validateInput } from './middleware/validation'
 import authRoutes from './routes/auth'
 import pedidosRoutes from './routes/pedidos'
 import blogRoutes from './routes/blog'
 import newsletterRoutes from './routes/newsletter'
+import paymentRoutes from './routes/payment'
+import emailMarketingRoutes from './routes/email-marketing'
 
 dotenv.config()
 
@@ -14,10 +18,12 @@ const PORT = process.env.PORT || 5000
 // Middleware
 app.use(cors())
 app.use(express.json())
+app.use(rateLimitMiddleware(100, 15 * 60 * 1000)) // 100 requests per 15 minutes
+app.use(validateInput)
 
 // Health Check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'API is running' })
+  res.json({ status: 'API is running', timestamp: new Date().toISOString() })
 })
 
 // Services routes
@@ -88,7 +94,10 @@ app.use('/api/auth', authRoutes)
 app.use('/api/pedidos', pedidosRoutes)
 app.use('/api/blog', blogRoutes)
 app.use('/api/newsletter', newsletterRoutes)
+app.use('/api/payment', paymentRoutes)
+app.use('/api/email-marketing', emailMarketingRoutes)
 
 app.listen(PORT, () => {
   console.log(`✅ Servidor rodando na porta ${PORT}`)
+  console.log(`🌐 Ambiente: ${process.env.NODE_ENV || 'development'}`)
 })
