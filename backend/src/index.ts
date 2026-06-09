@@ -1,6 +1,10 @@
 import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
+import authRoutes from './routes/auth'
+import pedidosRoutes from './routes/pedidos'
+import blogRoutes from './routes/blog'
+import newsletterRoutes from './routes/newsletter'
 
 dotenv.config()
 
@@ -11,7 +15,7 @@ const PORT = process.env.PORT || 5000
 app.use(cors())
 app.use(express.json())
 
-// Routes
+// Health Check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'API is running' })
 })
@@ -65,7 +69,7 @@ app.get('/api/servicos', (req, res) => {
   res.json(servicos)
 })
 
-// Contato route
+// Contact route
 app.post('/api/contato', (req, res) => {
   const { nome, email, telefone, mensagem } = req.body
 
@@ -73,11 +77,17 @@ app.post('/api/contato', (req, res) => {
     return res.status(400).json({ erro: 'Campos obrigatórios faltando' })
   }
 
-  // TODO: Implementar envio de email
+  // TODO: Send email
   console.log('Novo contato:', { nome, email, telefone, mensagem })
 
   res.json({ sucesso: true, mensagem: 'Mensagem enviada com sucesso!' })
 })
+
+// Register routes
+app.use('/api/auth', authRoutes)
+app.use('/api/pedidos', pedidosRoutes)
+app.use('/api/blog', blogRoutes)
+app.use('/api/newsletter', newsletterRoutes)
 
 app.listen(PORT, () => {
   console.log(`✅ Servidor rodando na porta ${PORT}`)
